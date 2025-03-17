@@ -49,7 +49,18 @@ export default function App() {
         setCurrentIndex(nextIndex);
         readText("Tin tiếp theo: " + articles[nextIndex].title);
       } else if (command.includes("đọc tiếp")) {
+        if (articles.length === 0) {
+          readText("Không có bài báo nào.");
+          return;
+        }
+
         let article = articles[currentIndex];
+
+        if (!article || !article.link) {
+          readText("Không thể lấy nội dung bài báo.");
+          return;
+        }
+
         try {
           let res = await axios.get(`http://localhost:5000/article?url=${article.link}`);
           setCurrentContent(res.data.content);
