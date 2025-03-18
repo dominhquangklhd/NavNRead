@@ -7,7 +7,7 @@ import "./App.css"
 import NewestNews from "./functions/NewestNews";
 
 export default function App() {
-  
+
 
   return (
     <div className="">
@@ -15,7 +15,7 @@ export default function App() {
         <Sidebar />
         <NewestNews/>
       </div>
-      
+
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { readText, stopReading } from "../components/VoiceControl"
+import { summarizeArticle } from "./SummarizeArticle";
 import axios from "axios";
 import ContainContents from "../components/ContainContents";
 import "./NewestNews.css"
@@ -8,6 +9,7 @@ export default function NewestNews() {
     const [articles, setArticles] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentContent, setCurrentContent] = useState("");
+    const [summary, setSummary] = useState("");
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 
     useEffect(() => {
@@ -57,7 +59,10 @@ export default function NewestNews() {
                     readText(res.data.content);
                 } catch (error) {
                     readText("Không thể lấy nội dung bài báo.");
+                    console.error("Lỗi khi lấy nội dung bài báo:", error);
                 }
+            } else if (command.includes("tóm tắt")) {
+                await summarizeArticle(currentContent, readText, setSummary);
             } else if (command.includes("làm mới tin tức")) {
                 readText("Đang cập nhật tin tức mới nhất...");
                 await fetchNews();
@@ -70,7 +75,7 @@ export default function NewestNews() {
     return (
         <div className="newest-news">
             {articles.length > 0 ? (
-                <ContainContents title={articles[currentIndex].title} content={currentContent} />
+                <ContainContents title={articles[currentIndex].title} content={summary || currentContent} />
             ) : (
                 <ContainContents title="Đang tải tiêu đề..." content="..." />
             )}
