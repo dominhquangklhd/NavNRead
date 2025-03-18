@@ -1,0 +1,23 @@
+/* Định dạng khung hình chữ nhật */
+.content-container {
+    height: 80vh; /* Chiều cao 80% màn hình */
+    padding: 20px;
+    border: 2px solid gray; /* Viền màu xám */
+    border-radius: 10px; /* Bo góc */
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2); /* Đổ bóng */
+    overflow-y: auto; /* Cuộn dọc nếu nội dung dài */
+    background-color: white; /* Nền trắng */
+}
+
+/* Tiêu đề */
+.content-title {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Nội dung */
+.content-text {
+    font-size: 16px;
+    margin-top: 10px;
+    line-height: 1.5;
+}
