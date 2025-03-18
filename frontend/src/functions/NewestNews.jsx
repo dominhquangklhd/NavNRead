@@ -37,8 +37,18 @@ export default function NewestNews() {
             if (command.includes("tin tiếp theo")) {
                 let nextIndex = (currentIndex + 1) % articles.length;
                 setCurrentIndex(nextIndex);
+                setCurrentContent("");
                 readText("Tin tiếp theo: " + articles[nextIndex].title);
-            } else if (command.includes("đọc tiếp")) {
+            } else if (command.includes("tin trước")) {
+                if (currentIndex - 1 >= 0) {
+                    let nextIndex = (currentIndex - 1) % articles.length;
+                    setCurrentIndex(nextIndex);
+                    setCurrentContent("");
+                    readText("Tin trước: " + articles[nextIndex].title);
+                } else {
+                    readText("Không còn tin trước");
+                }
+            } else if (command.includes("đọc tin này")) {
                 if (articles.length === 0) {
                     readText("Không có bài báo nào.");
                     return;
@@ -52,6 +62,7 @@ export default function NewestNews() {
                 }
 
                 try {
+                    readText("đang lấy dữ liệu");
                     let res = await axios.get(`http://localhost:5000/article?url=${article.link}`);
                     setCurrentContent(res.data.content);
                     readText(res.data.content);
