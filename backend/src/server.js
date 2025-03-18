@@ -2,9 +2,11 @@ const express = require("express");
 const axios = require("axios");
 const cheerio = require("cheerio");
 const cors = require("cors");
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 
 const BASE_URL = "https://vnexpress.net/";
 
@@ -49,6 +51,37 @@ app.get("/article", async (req, res) => {
     res.json({ content });
   } catch (error) {
     res.status(500).json({ error: "Lỗi lấy nội dung bài báo" });
+  }
+});
+
+app.post("/summarize", async (req, res) => {
+  try {
+    const { content } = req.body;
+
+    const response = await axios.post(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { 
+            role: "system", 
+            content: "Bạn là một AI hữu ích, có chức năng tóm tắt văn bản bằng ngôn ngữ đơn giản cho người khiếm thị. Tóm tắt văn bản bằng tiếng Việt thành một đoạn văn bản duy nhất, không có phần giới thiệu hay kết luận, không định dạng. Chỉ hiển thị nội dung đã tóm tắt." 
+          },
+          { role: "user", content: content }
+        ]
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    res.json({ summary: response.data.choices[0].message.content });
+  } catch (error) {
+    console.error("Error fetching summary:", error);
+    res.status(500).json({ error: "Failed to summarize the article" });
   }
 });
 

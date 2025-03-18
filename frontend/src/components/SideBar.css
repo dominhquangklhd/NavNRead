@@ -22,7 +22,7 @@
 
 /* Mỗi mục chức năng */
 .sidebar-item {
-    background-color: white;
+    background-color: #007bff;
     padding: 10px;
     margin: 5px 0;
     border: 1px solid gray;
@@ -34,4 +34,10 @@
 /* Hiệu ứng hover */
 .sidebar-item:hover {
     background-color: #e2e6ea;
+}
+
+.sidebar-item.active {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
 }
