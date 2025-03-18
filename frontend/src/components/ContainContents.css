@@ -11,12 +11,14 @@
 
 /* Tiêu đề */
 .content-title {
+    color: black;
     font-size: 24px;
     font-weight: bold;
 }
 
 /* Nội dung */
 .content-text {
+    color: black;
     font-size: 16px;
     margin-top: 10px;
     line-height: 1.5;
