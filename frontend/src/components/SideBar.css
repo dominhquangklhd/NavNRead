@@ -1,0 +1,37 @@
+/* Sidebar tổng thể */
+.sidebar {
+    width: 20%; /* Chiếm 20% chiều rộng màn hình */
+    padding: 20px;
+    background-color: #f8f9fa; /* Nền xám nhạt */
+    border-right: 2px solid gray; /* Viền bên phải */
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2); /* Đổ bóng */
+}
+
+/* Tiêu đề */
+.sidebar-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Danh sách chức năng */
+.sidebar-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+/* Mỗi mục chức năng */
+.sidebar-item {
+    background-color: white;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid gray;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Hiệu ứng hover */
+.sidebar-item:hover {
+    background-color: #e2e6ea;
+}
