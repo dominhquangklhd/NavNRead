@@ -35,25 +35,39 @@ export default function NewestNews() {
         recognition.onresult = async (event) => {
             let command = event.results[0][0].transcript.toLowerCase();
             console.log("Lệnh nhận được:", command);
-
+    
             if (command.includes("tin tiếp theo")) {
+                stopReading(); // Dừng đọc bài báo cũ
                 let nextIndex = (currentIndex + 1) % articles.length;
                 setCurrentIndex(nextIndex);
-                readText("Tin tiếp theo: " + articles[nextIndex].title);
-            } else if (command.includes("đọc tiếp")) {
+                setCurrentContent(""); // Xóa nội dung bài báo cũ
+                readText("Tin tiếp theo: " + articles[nextIndex].title); // Đọc tiêu đề mới
+            } else if (command.includes("tin trước")) {
+                stopReading(); // Dừng đọc bài báo cũ
+                if (currentIndex - 1 >= 0) {
+                    let nextIndex = (currentIndex - 1) % articles.length;
+                    setCurrentIndex(nextIndex);
+                    setCurrentContent(""); // Xóa nội dung bài báo cũ
+                    readText("Tin trước: " + articles[nextIndex].title); // Đọc tiêu đề mới
+                } else {
+                    readText("Không còn tin trước");
+                }
+            } else if (command.includes("đọc tin này")) {
                 if (articles.length === 0) {
                     readText("Không có bài báo nào.");
                     return;
                 }
-
+    
                 let article = articles[currentIndex];
-
+    
                 if (!article || !article.link) {
                     readText("Không thể lấy nội dung bài báo.");
                     return;
                 }
-
+    
                 try {
+                    stopReading(); // Dừng bất kỳ bài báo nào đang đọc
+                    readText("Đang lấy dữ liệu...");
                     let res = await axios.get(`http://localhost:5000/article?url=${article.link}`);
                     setCurrentContent(res.data.content);
                     readText(res.data.content);
@@ -64,6 +78,7 @@ export default function NewestNews() {
             } else if (command.includes("tóm tắt")) {
                 await summarizeArticle(currentContent, readText, setSummary);
             } else if (command.includes("làm mới tin tức")) {
+                stopReading();
                 readText("Đang cập nhật tin tức mới nhất...");
                 await fetchNews();
             } else if (command.includes("dừng đọc")) {
@@ -71,6 +86,7 @@ export default function NewestNews() {
             }
         };
     }
+    
 
     return (
         <div className="newest-news">

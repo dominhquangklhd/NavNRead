@@ -35,3 +35,9 @@
 .sidebar-item:hover {
     background-color: #e2e6ea;
 }
+
+.sidebar-item.active {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
