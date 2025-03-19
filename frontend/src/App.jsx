@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Sidebar from "./components/SideBar";
 import NewestNews from "./functions/NewestNews";
 import "./App.css"
