@@ -73,6 +73,7 @@ export default function NewestNews() {
                     readText("Tóm tắt: " + summaryText);
                 } catch (error) {
                     readText("Không thể lấy nội dung bài báo.");
+                    console.error("Lỗi khi lấy nội dung bài báo:", error);
                 }
             } else if (command.includes("làm mới tin tức")) {
                 stopReading();

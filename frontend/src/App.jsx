@@ -1,8 +1,12 @@
 import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./components/SideBar";
+import NewestNews from "./functions/NewestNews";
 import NewestNews from "./functions/NewestNews";
 import "./App.css"
 
+import { readText } from "./components/VoiceControl"
+import { FUNCTION_NAMES, functionMap } from "./constants";
 import { readText } from "./components/VoiceControl"
 import { FUNCTION_NAMES, functionMap } from "./constants";
 
@@ -41,6 +45,9 @@ export default function App() {
   return (
     <div className="">
       <div className="app">
+        <Sidebar currentFunc={currentFunc} />
+        { renderComponent[currentFunc] || null }
+        <button onClick={startListening}>Nút Test chuyển tính năng</button>
         <Sidebar currentFunc={currentFunc} />
         { renderComponent[currentFunc] || null }
         <button onClick={startListening}>Nút Test chuyển tính năng</button>
