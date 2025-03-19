@@ -1,17 +1,32 @@
-import { useState, useEffect } from "react";
-import { readText, stopReading } from "../components/VoiceControl"
+import { useState, useEffect, useRef } from "react";
+import { readText, stopReading } from "../components/VoiceControl";
 import axios from "axios";
 import ContainContents from "../components/ContainContents";
-import "./NewestNews.css"
+import "./NewestNews.css";
 
 export default function NewestNews() {
     const [articles, setArticles] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentContent, setCurrentContent] = useState("");
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    const buttonRef = useRef(null); // Tham chiếu đến nút "Bật giọng nói"
 
     useEffect(() => {
         fetchNews();
+
+        // Thêm event listener cho phím Space
+        const handleKeyDown = (event) => {
+            if (event.code === "Space") {
+                event.preventDefault(); // Ngăn chặn hành vi mặc định của phím Space (cuộn trang)
+                buttonRef.current.click(); // Kích hoạt sự kiện click trên nút
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+
+        // Dọn dẹp event listener khi component unmount
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
     }, []);
 
     async function fetchNews() {
@@ -33,7 +48,7 @@ export default function NewestNews() {
         recognition.onresult = async (event) => {
             let command = event.results[0][0].transcript.toLowerCase();
             console.log("Lệnh nhận được:", command);
-    
+
             if (command.includes("tin tiếp theo")) {
                 stopReading(); // Dừng đọc bài báo cũ
                 let nextIndex = (currentIndex + 1) % articles.length;
@@ -55,14 +70,14 @@ export default function NewestNews() {
                     readText("Không có bài báo nào.");
                     return;
                 }
-    
+
                 let article = articles[currentIndex];
-    
+
                 if (!article || !article.link) {
                     readText("Không thể lấy nội dung bài báo.");
                     return;
                 }
-    
+
                 try {
                     stopReading(); // Dừng bất kỳ bài báo nào đang đọc
                     readText("Đang lấy dữ liệu...");
@@ -81,7 +96,6 @@ export default function NewestNews() {
             }
         };
     }
-    
 
     return (
         <div className="newest-news">
@@ -90,9 +104,9 @@ export default function NewestNews() {
             ) : (
                 <ContainContents title="Đang tải tiêu đề..." content="..." />
             )}
-            <button onClick={startListening} className="">
+            <button ref={buttonRef} onClick={startListening} className="">
                 🎙 Bật giọng nói
             </button>
         </div>
-    )
+    );
 }
