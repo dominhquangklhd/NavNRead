@@ -37,6 +37,26 @@ app.get("/news", (req, res) => {
   res.json(cachedArticles);
 });
 
+app.get("/search",async (req,res)=>{
+  try {
+    const query = req.query.q;
+    const {data} = await axios.get(`https://timkiem.vnexpress.net/?q=${query}`);
+    const $ = cheerio.load(data);
+    let articles = []
+
+    $(".title-news a").each((i, el) => {
+      let title = $(el).text().trim();
+      let link = $(el).attr("href");
+      articles.push({ title, link });
+    });
+    console.log(articles)
+
+    res.json(articles);
+  } catch (error){
+    res.status(500).json({error:"Lỗi tìm kiếm tin tức"})
+  }
+})
+
 app.get("/article", async (req, res) => {
   try {
     const articleUrl = req.query.url;
