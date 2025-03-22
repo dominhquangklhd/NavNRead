@@ -9,8 +9,8 @@ export default function Sidebar({ currentFunc }) {
                 <li className={`sidebar-item ${currentFunc === FUNCTION_NAMES.NEWS ? "active" : ""}`}>
                     Tin tức mới nhất
                 </li>
-                <li className={`sidebar-item ${currentFunc === FUNCTION_NAMES.FEATURE_2 ? "active" : ""}`}>
-                    Tính năng 2
+                <li className={`sidebar-item ${currentFunc === FUNCTION_NAMES.SEARCH ? "active" : ""}`}>
+                    Tìm kiếm
                 </li>
                 <li className={`sidebar-item ${currentFunc === FUNCTION_NAMES.FEATURE_3 ? "active" : ""}`}>
                     Tính năng 3

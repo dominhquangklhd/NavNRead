@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Sidebar from "./components/SideBar";
 import NewestNews from "./functions/NewestNews";
+import SearchNews from "./functions/SearchNews.jsx";
 import "./App.css"
 
 import { readText } from "./components/VoiceControl"
@@ -15,7 +16,7 @@ export default function App() {
   // Render nội dung các tính năng ở bên phải màn hình
   const renderComponent = {
     [FUNCTION_NAMES.NEWS]: <NewestNews />,
-    [FUNCTION_NAMES.FEATURE_2]: <div>Chức năng 2</div>,
+    [FUNCTION_NAMES.SEARCH]: <SearchNews/>,
     [FUNCTION_NAMES.FEATURE_3]: <div>Chức năng 3</div>,
   };
 
