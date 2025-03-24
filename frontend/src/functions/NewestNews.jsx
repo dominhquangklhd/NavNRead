@@ -15,6 +15,12 @@ export default function NewestNews() {
     useEffect(() => {
         fetchNews();
 
+        // Lấy index từ sessionStorage nếu có
+        const savedIndex = sessionStorage.getItem("newsIndex");
+        if (savedIndex !== null) {
+            setCurrentIndex(parseInt(savedIndex));
+        }
+
         // Thêm event listener cho phím Space
         const handleKeyDown = (event) => {
             if (event.code === "Space") {
@@ -34,9 +40,15 @@ export default function NewestNews() {
         try {
             let res = await axios.get("http://localhost:5000/news");
             setArticles(res.data);
-            setCurrentIndex(0);
+
+            // Nếu có tin tức, đọc tin hiện tại thay vì mặc định về tin đầu tiên
             if (res.data.length > 0) {
-                readText("Tin tức mới nhất: " + res.data[0].title);
+                const savedIndex = sessionStorage.getItem("newsIndex");
+                const index = savedIndex !== null ? parseInt(savedIndex) : 0;
+                
+                setCurrentIndex(index);
+                
+                readText("Tin tức mới nhất: " + res.data[index].title);
             }
         } catch (error) {
             console.error("Lỗi tải tin tức:", error);
@@ -52,16 +64,24 @@ export default function NewestNews() {
 
             if (command.includes("tin tiếp theo")) {
                 stopReading(); // Dừng đọc bài báo cũ
+                
                 let nextIndex = (currentIndex + 1) % articles.length;
+                
                 setCurrentIndex(nextIndex);
+                sessionStorage.setItem("newsIndex", nextIndex);
                 setSummary(""); // Xóa tóm tắt bài báo cũ
+                
                 readText("Tin tiếp theo: " + articles[nextIndex].title); // Đọc tiêu đề mới
             } else if (command.includes("tin trước")) {
                 stopReading(); // Dừng đọc bài báo cũ
+                
                 if (currentIndex - 1 >= 0) {
                     let nextIndex = (currentIndex - 1) % articles.length;
+                    
                     setCurrentIndex(nextIndex);
+                    sessionStorage.setItem("newsIndex", nextIndex);
                     setSummary(""); // Xóa tóm tắt bài báo cũ
+                    
                     readText("Tin trước: " + articles[nextIndex].title); // Đọc tiêu đề mới
                 } else {
                     readText("Không còn tin trước");
@@ -82,9 +102,12 @@ export default function NewestNews() {
                 try {
                     stopReading(); // Dừng bất kỳ bài báo nào đang đọc
                     readText("Đang lấy dữ liệu...");
+                    
                     let res = await axios.get(`http://localhost:5000/article?url=${article.link}`);
                     let summaryText = await summarizeArticle(res.data.content);
+                    
                     setSummary(summaryText);
+                    
                     readText("Tóm tắt: " + summaryText);
                 } catch (error) {
                     readText("Không thể lấy nội dung bài báo.");
@@ -93,6 +116,7 @@ export default function NewestNews() {
             } else if (command.includes("làm mới tin tức")) {
                 stopReading();
                 readText("Đang cập nhật tin tức mới nhất...");
+                
                 await fetchNews();
             } else if (command.includes("dừng đọc")) {
                 stopReading();
