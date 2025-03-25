@@ -1,5 +1,5 @@
 import "./Sidebar.css";
-import { FUNCTION_NAMES } from "../constants";
+import { FUNCTION_NAMES } from "../../constants";
 
 export default function Sidebar({ currentFunc }) {
     return (
