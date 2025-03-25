@@ -1,14 +1,20 @@
-import { useState } from "react";
-import Sidebar from "./components/SideBar";
-import NewestNews from "./functions/NewestNews";
-import SearchNews from "./functions/SearchNews.jsx";
+import { useEffect, useState } from "react";
+import Sidebar from "./components/SideBar/SideBar.jsx";
+import NewestNews from "./components/NewestNews/NewestNews.jsx";
+import SearchNews from "./components/SearchNews/SearchNews.jsx";
 import "./App.css"
 
-import { readText } from "./components/VoiceControl"
 import { FUNCTION_NAMES, functionMap } from "./constants";
+import { readText } from "./utils/voiceUtils.jsx";
 
 export default function App() {
-  const [currentFunc, setCurrentFunc] = useState(FUNCTION_NAMES.NEWS);
+  const [currentFunc, setCurrentFunc] = useState(() => {
+    return sessionStorage.getItem("currentFunc") || FUNCTION_NAMES.NEWS;
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem("currentFunc", currentFunc);
+  }, [currentFunc]);
 
   // Tạo ghi âm
   const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
