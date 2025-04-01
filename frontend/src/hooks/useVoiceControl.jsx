@@ -51,6 +51,7 @@ export default function useVoiceControl(currentIndex, setCurrentIndex, articles,
         let preText = "chuyển sang";
         for (const key in functionMap) {
             if (command.includes(key)) {
+                stopReading();
                 setCurrentFunc(functionMap[key]);
                 readText(preText + functionMap[key]);
                 break;
