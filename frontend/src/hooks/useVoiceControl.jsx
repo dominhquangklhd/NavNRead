@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { readText, stopReading } from "../utils/voiceUtils";
 import { summarizeArticle } from "../services/SummarizeArticle";
 import { fetchNews } from "../services/fetchNews";
-import { ARTICLE_ENDPOINT, FUNCTION_NAMES, ID_SEARCH_STORAGE, MARK_READ_ENDPOINT } from "../constants";
+import { ARTICLE_ENDPOINT, ID_SEARCH_STORAGE, functionMap } from "../constants";
 import { fetchSearchNews } from "../services/fetchSearchNews";
 
 import axios from "axios";
+import { useFunctionContext } from "../context/FunctionContext";
 
 export default function useVoiceControl(currentIndex, setCurrentIndex, articles, setArticles, idStorage) {
+    const { setCurrentFunc } = useFunctionContext(); // Dùng context
     const [summary, setSummary] = useState("");
     const [isListening, setIsListening] = useState(false); // Trạng thái mic
     const buttonRef = useRef(null);
@@ -46,26 +48,35 @@ export default function useVoiceControl(currentIndex, setCurrentIndex, articles,
         let command = event.results[0][0].transcript.toLowerCase();
         console.log("Lệnh nhận được:", command);
 
+        let preText = "chuyển sang";
+        for (const key in functionMap) {
+            if (command.includes(key)) {
+                setCurrentFunc(functionMap[key]);
+                readText(preText + functionMap[key]);
+                break;
+            }
+        }
+
         if (command.includes("tin tiếp theo")) {
             stopReading();
-            
+
             let nextIndex = (currentIndex + 1) % articles.length;
-            
+
             setCurrentIndex(nextIndex);
             sessionStorage.setItem(idStorage, nextIndex);
             setSummary("");
-            
+
             readText("Tin tiếp theo: " + articles[nextIndex].title);
         } else if (command.includes("tin trước")) {
             stopReading();
 
             if (currentIndex - 1 >= 0) {
                 let nextIndex = (currentIndex - 1) % articles.length;
-                
+
                 setCurrentIndex(nextIndex);
                 sessionStorage.setItem(idStorage, nextIndex);
                 setSummary("");
-                
+
                 readText("Tin trước: " + articles[nextIndex].title);
             } else {
                 readText("Không còn tin trước");
@@ -83,12 +94,12 @@ export default function useVoiceControl(currentIndex, setCurrentIndex, articles,
             try {
                 stopReading();
                 readText("Đang lấy dữ liệu...");
-                
+
                 let res = await axios.get(ARTICLE_ENDPOINT + article.link);
                 let summaryText = await summarizeArticle(res.data.content);
-                
+
                 setSummary(summaryText);
-                
+
                 readText("Tóm tắt: " + summaryText);
             } catch (error) {
                 readText("Không thể lấy nội dung bài báo.");
