@@ -1,7 +1,7 @@
 import "./Sidebar.css";
-import { FUNCTION_NAMES } from "../../constants";
+import {FUNCTION_NAMES} from "../../constants";
 
-export default function Sidebar({ currentFunc }) {
+export default function Sidebar({currentFunc}) {
     return (
         <div className="sidebar">
             <h2 className="sidebar-title">Tính năng</h2>
@@ -12,8 +12,8 @@ export default function Sidebar({ currentFunc }) {
                 <li className={`sidebar-item ${currentFunc === FUNCTION_NAMES.SEARCH ? "active" : ""}`}>
                     Tìm kiếm
                 </li>
-                <li className={`sidebar-item ${currentFunc === FUNCTION_NAMES.FEATURE_3 ? "active" : ""}`}>
-                    Tính năng 3
+                <li className={`sidebar-item ${currentFunc === FUNCTION_NAMES.CATEGORY ? "active" : ""}`}>
+                    Chủ đề
                 </li>
             </ul>
         </div>
