@@ -1,15 +1,16 @@
-import { useEffect, useRef, useState } from "react";
-import { readText, stopReading } from "../utils/voiceUtils";
-import { summarizeArticle } from "../services/SummarizeArticle";
-import { fetchNews } from "../services/fetchNews";
-import { ARTICLE_ENDPOINT, ID_SEARCH_STORAGE, functionMap } from "../constants";
-import { fetchSearchNews } from "../services/fetchSearchNews";
+import {useEffect, useRef, useState} from "react";
+import {readText, stopReading} from "../utils/voiceUtils";
+import {summarizeArticle} from "../services/SummarizeArticle";
+import {fetchNews} from "../services/fetchNews";
+import {ARTICLE_ENDPOINT, ID_SEARCH_STORAGE, functionMap, ID_CATEGORY_STORAGE, RSS_NAMES} from "../constants";
+import {fetchSearchNews} from "../services/fetchSearchNews";
+import {fetchCategoryNews} from "../services/fetchCategoryNews.jsx";
 
 import axios from "axios";
-import { useFunctionContext } from "../context/FunctionContext";
+import {useFunctionContext} from "../context/FunctionContext";
 
 export default function useVoiceControl(currentIndex, setCurrentIndex, articles, setArticles, idStorage) {
-    const { setCurrentFunc } = useFunctionContext(); // Dùng context
+    const {setCurrentFunc} = useFunctionContext(); // Dùng context
     const [summary, setSummary] = useState("");
     const [isListening, setIsListening] = useState(false); // Trạng thái mic
     const buttonRef = useRef(null);
@@ -114,8 +115,19 @@ export default function useVoiceControl(currentIndex, setCurrentIndex, articles,
             stopReading();
         } else if (idStorage === ID_SEARCH_STORAGE) {
             await fetchSearchNews(command, setArticles, setCurrentIndex);
+        } else if (idStorage === ID_CATEGORY_STORAGE) {
+            let query = "";
+            for (const key in RSS_NAMES){
+                if(command.includes(key)){
+                    query = RSS_NAMES[key]
+                    break
+                }
+            }
+            if (query) {
+                await fetchCategoryNews(query, setArticles, setCurrentIndex);
+            }
         }
     };
 
-    return { startListening, buttonRef, summary, isListening };
+    return {startListening, buttonRef, summary, isListening};
 }
