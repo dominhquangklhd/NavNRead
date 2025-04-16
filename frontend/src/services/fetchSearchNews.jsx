@@ -1,16 +1,18 @@
 import axios from "axios";
 import { readText } from "../utils/voiceUtils";
-import { READ_ARTICLES_ENDPOINT, SEARCH_ENDPOINT } from "../constants";
+import { SEARCH_ENDPOINT } from "../constants";
+import { getReadArticles } from "../utils/readTracker";
 
 export async function fetchSearchNews(query, setArticles, setCurrentIndex) {
     try {
         let res = await axios.get(SEARCH_ENDPOINT + query);
         let articles = res.data;
 
-        let readTitles = await axios.get(READ_ARTICLES_ENDPOINT);
-        let readSet = new Set(readTitles.data);
+        let readArticles = getReadArticles();
+        console.log("Read Articles from localStorage:", readArticles);
 
-        // Filter out already read articles
+        const readSet = new Set(readArticles.map(article => article.title));
+
         articles = articles.filter(article => !readSet.has(article.title));
 
         setArticles(articles);

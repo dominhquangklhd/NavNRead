@@ -15,6 +15,9 @@ export default function Sidebar({currentFunc}) {
                 <li className={`sidebar-item ${currentFunc === FUNCTION_NAMES.CATEGORY ? "active" : ""}`}>
                     Chủ đề
                 </li>
+                <li className={`sidebar-item ${currentFunc === FUNCTION_NAMES.HISTORY ? "active" : ""}`}>
+                    Lịch sử
+                </li>
             </ul>
         </div>
     );
