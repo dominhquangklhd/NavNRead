@@ -2,7 +2,9 @@ import {useEffect, useRef, useState} from "react";
 import {readText, stopReading} from "../utils/voiceUtils";
 import {summarizeArticle} from "../services/SummarizeArticle";
 import {fetchNews} from "../services/fetchNews";
-import {ARTICLE_ENDPOINT, ID_SEARCH_STORAGE, functionMap, ID_CATEGORY_STORAGE, RSS_NAMES} from "../constants";
+import {fetchHistoryNews} from "../services/fetchHistoryNews";
+import { markArticleAsRead } from "../utils/readTracker.jsx";
+import {ARTICLE_ENDPOINT, ID_SEARCH_STORAGE, functionMap, ID_CATEGORY_STORAGE, RSS_NAMES, HISTORY_STORAGE } from "../constants";
 import {fetchSearchNews} from "../services/fetchSearchNews";
 import {fetchCategoryNews} from "../services/fetchCategoryNews.jsx";
 
@@ -103,17 +105,20 @@ export default function useVoiceControl(currentIndex, setCurrentIndex, articles,
                 setSummary(summaryText);
 
                 readText("Tóm tắt: " + summaryText);
+
+                markArticleAsRead({ title: article.title, link: article.link });
             } catch (error) {
                 readText("Không thể lấy nội dung bài báo.");
                 console.error("Lỗi khi lấy nội dung bài báo:", error);
             }
+        } else if (command.includes("dừng đọc")) {
+            stopReading();
         } else if (command.includes("làm mới tin tức")) {
             stopReading();
             readText("Đang cập nhật tin tức mới nhất...");
-            await fetchNews();
-        } else if (command.includes("dừng đọc")) {
-            stopReading();
+            await fetchNews(setArticles, setCurrentIndex);
         } else if (idStorage === ID_SEARCH_STORAGE) {
+            console.log("Đang tải tin tức tìm kiếm...");
             await fetchSearchNews(command, setArticles, setCurrentIndex);
         } else if (idStorage === ID_CATEGORY_STORAGE) {
             let query = "";
@@ -126,6 +131,8 @@ export default function useVoiceControl(currentIndex, setCurrentIndex, articles,
             if (query) {
                 await fetchCategoryNews(query, setArticles, setCurrentIndex);
             }
+        } else if (idStorage === HISTORY_STORAGE) {
+            await fetchHistoryNews(setArticles, setCurrentIndex);
         }
     };
 

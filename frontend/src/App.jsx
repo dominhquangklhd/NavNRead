@@ -6,6 +6,7 @@ import CategoryNews from "./components/CategoryNews/CategoryNews.jsx"
 import {FunctionProvider, useFunctionContext} from "./context/FunctionContext";
 import "./App.css";
 import {FUNCTION_NAMES} from "./constants";
+import HistoryNews from "./components/HistoryNews/HistoryNews.jsx";
 
 function AppContent() {
     const {currentFunc} = useFunctionContext();
@@ -18,6 +19,7 @@ function AppContent() {
         [FUNCTION_NAMES.NEWS]: <NewestNews/>,
         [FUNCTION_NAMES.SEARCH]: <SearchNews/>,
         [FUNCTION_NAMES.CATEGORY]: <CategoryNews/>,
+        [FUNCTION_NAMES.HISTORY]: <HistoryNews/>,
     };
 
     return (

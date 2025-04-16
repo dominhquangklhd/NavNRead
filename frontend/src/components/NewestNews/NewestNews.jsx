@@ -16,7 +16,7 @@ export default function NewestNews() {
     const { startListening, buttonRef, summary, isListening } = useVoiceControl(currentIndex, setCurrentIndex, articles, setArticles, ID_NEWS_STORAGE);
 
     useEffect(() => {
-        fetchNews(NEWS_ENDPOINT, ID_NEWS_STORAGE, setArticles, setCurrentIndex);
+        fetchNews(setArticles, setCurrentIndex);
 
         // Lấy index từ sessionStorage nếu có
         const savedIndex = sessionStorage.getItem(ID_NEWS_STORAGE);

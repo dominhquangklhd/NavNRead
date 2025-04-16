@@ -2,16 +2,12 @@ const express = require("express");
 const axios = require("axios");
 const cheerio = require("cheerio");
 const cors = require("cors");
-const redis = require("redis");
-const client = redis.createClient();
 
 require('dotenv').config({path: '../.env'});
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-client.on("error", (err) => console.error("Redis error:", err));
-client.connect();
 
 const BASE_URL = "https://vnexpress.net/";
 
@@ -108,14 +104,19 @@ app.post("/summarize", async (req, res) => {
     try {
         const {content} = req.body;
 
-        const response = await axios.post(
+        // Chuẩn hóa nội dung
+        const normalizeResponse = await axios.post(
             "https://api.groq.com/openai/v1/chat/completions",
             {
                 model: "llama-3.3-70b-versatile",
                 messages: [
                     {
                         role: "system",
-                        content: "Bạn là một AI hữu ích, có chức năng tóm tắt văn bản bằng ngôn ngữ đơn giản cho người khiếm thị. Hãy giúp tôi tóm tắt các ý chính của văn bản bằng tiếng Việt. Chỉ hiển thị nội dung đã tóm tắt."
+                        content: `Bạn là một AI hữu ích, có nhiệm vụ chuẩn hóa nội dung bài báo:
+                        1. Chuyển đổi ngày tháng với dấu phẩy hoặc dấu chấm thành dạng đầy đủ (ví dụ: 12/3/2023 thành ngày 12 tháng 3 năm 2023)"
+                        2. Chuyển từ viết tắt (ví dụ: LHQ, WHO, TP) thành dạng đầy đủ (Liên Hợp Quốc, Tổ chức Y tế Thế giới, Thành phố)
+                        3. Giữ nguyên các thông tin quan trọng khác
+                        4. Chỉ trả về nội dung đã chuẩn hóa, không cần tiêu đề hay bất kỳ thông tin nào khác`,
                     },
                     {role: "user", content: content}
                 ]
@@ -128,31 +129,36 @@ app.post("/summarize", async (req, res) => {
             }
         );
 
-        res.json({summary: response.data.choices[0].message.content});
+        const normalizedContent = normalizeResponse.data.choices[0].message.content;
+
+        // Tóm tắt nội dung đã chuẩn hóa
+        const summaryResponse = await axios.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            {
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                    {
+                        role: "system",
+                        content: `Bạn là một AI hữu ích, có nhiệm vụ tóm tắt bài báo cho người khiếm thị:
+                        1. Chỉ nêu các ý chính quan trọng
+                        2. Sử dụng ngôn ngữ đơn giản, dễ hiểu
+                        3. Chỉ trả về nội dung tóm tắt, không cần tiêu đề hay bất kỳ thông tin nào khác`,
+                    },
+                    {role: "user", content: normalizedContent}
+                ]
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        res.json({summary: summaryResponse.data.choices[0].message.content});
     } catch (error) {
         console.error("Error fetching summary:", error);
         res.status(500).json({error: "Failed to summarize the article"});
-    }
-});
-
-app.post("/mark-read", async (req, res) => {
-    try {
-        const {title} = req.body;
-        if (!title) return res.status(400).json({error: "Missing title"});
-
-        await client.sAdd("read_articles", title);
-        res.json({message: "Article marked as read"});
-    } catch (error) {
-        res.status(500).json({error: "Failed to mark article as read"});
-    }
-});
-
-app.get("/read-articles", async (req, res) => {
-    try {
-        let readArticles = await client.sMembers("read_articles");
-        res.json(readArticles);
-    } catch (error) {
-        res.status(500).json({error: "Failed to get read articles"});
     }
 });
 
