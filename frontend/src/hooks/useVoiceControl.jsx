@@ -3,8 +3,15 @@ import {readText, stopReading} from "../utils/voiceUtils";
 import {summarizeArticle} from "../services/SummarizeArticle";
 import {fetchNews} from "../services/fetchNews";
 import {fetchHistoryNews} from "../services/fetchHistoryNews";
-import { markArticleAsRead } from "../utils/readTracker.jsx";
-import {ARTICLE_ENDPOINT, ID_SEARCH_STORAGE, functionMap, ID_CATEGORY_STORAGE, RSS_NAMES, HISTORY_STORAGE } from "../constants";
+import {markArticleAsRead} from "../utils/readTracker.jsx";
+import {
+    ARTICLE_ENDPOINT,
+    ID_SEARCH_STORAGE,
+    functionMap,
+    ID_CATEGORY_STORAGE,
+    RSS_NAMES,
+    HISTORY_STORAGE
+} from "../constants";
 import {fetchSearchNews} from "../services/fetchSearchNews";
 import {fetchCategoryNews} from "../services/fetchCategoryNews.jsx";
 
@@ -15,6 +22,8 @@ export default function useVoiceControl(currentIndex, setCurrentIndex, articles,
     const {setCurrentFunc} = useFunctionContext(); // Dùng context
     const [summary, setSummary] = useState("");
     const [isListening, setIsListening] = useState(false); // Trạng thái mic
+    const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0);
+    const topics = Object.keys(RSS_NAMES);
     const buttonRef = useRef(null);
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 
@@ -37,6 +46,28 @@ export default function useVoiceControl(currentIndex, setCurrentIndex, articles,
         recognition.start();
     }
 
+    function suggestTopics(index) {
+        const suggestions = [];
+        for(let i = 0; i < 3; i++) {
+            index = (currentSuggestionIndex + i) % topics.length;
+            suggestions.push(topics[index]);
+        }
+        if(index===0) {
+            readText("Các chủ đề gợi ý: " + suggestions.join(", "));
+        } else {
+            readText("Các chủ đề tiếp theo: " + suggestions.join(", "));
+        }
+    }
+
+    function skipSuggestion() {
+        setCurrentSuggestionIndex((prevIndex) => {
+            const nextIndex = (prevIndex + 3) % topics.length;
+            suggestTopics(nextIndex);
+            return nextIndex;
+        });
+
+    }
+
     recognition.onstart = () => {
         console.log("🎤 Mic đang nghe...");
         setIsListening(true);
@@ -57,6 +88,9 @@ export default function useVoiceControl(currentIndex, setCurrentIndex, articles,
                 stopReading();
                 setCurrentFunc(functionMap[key]);
                 readText(preText + functionMap[key]);
+                if (command.includes("chủ đề")) {
+                    suggestTopics()
+                }
                 break;
             }
         }
@@ -106,7 +140,7 @@ export default function useVoiceControl(currentIndex, setCurrentIndex, articles,
 
                 readText("Tóm tắt: " + summaryText);
 
-                markArticleAsRead({ title: article.title, link: article.link });
+                markArticleAsRead({title: article.title, link: article.link});
             } catch (error) {
                 readText("Không thể lấy nội dung bài báo.");
                 console.error("Lỗi khi lấy nội dung bài báo:", error);
@@ -121,15 +155,19 @@ export default function useVoiceControl(currentIndex, setCurrentIndex, articles,
             console.log("Đang tải tin tức tìm kiếm...");
             await fetchSearchNews(command, setArticles, setCurrentIndex);
         } else if (idStorage === ID_CATEGORY_STORAGE) {
-            let query = "";
-            for (const key in RSS_NAMES){
-                if(command.includes(key)){
-                    query = RSS_NAMES[key]
-                    break
+            if (command.includes("tiếp theo")) {
+                skipSuggestion();
+            } else {
+                let query = "";
+                for (const key in RSS_NAMES) {
+                    if (command.includes(key)) {
+                        query = RSS_NAMES[key]
+                        break
+                    }
                 }
-            }
-            if (query) {
-                await fetchCategoryNews(query, setArticles, setCurrentIndex);
+                if (query) {
+                    await fetchCategoryNews(query, setArticles, setCurrentIndex);
+                }
             }
         } else if (idStorage === HISTORY_STORAGE) {
             await fetchHistoryNews(setArticles, setCurrentIndex);
