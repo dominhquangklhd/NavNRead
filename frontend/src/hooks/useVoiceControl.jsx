@@ -2,7 +2,6 @@ import {useEffect, useRef, useState} from "react";
 import {readText, stopReading} from "../utils/voiceUtils";
 import {summarizeArticle} from "../services/SummarizeArticle";
 import {fetchNews} from "../services/fetchNews";
-import {fetchHistoryNews} from "../services/fetchHistoryNews";
 import {markArticleAsRead} from "../utils/readTracker.jsx";
 import {
     ARTICLE_ENDPOINT,
@@ -10,7 +9,8 @@ import {
     functionMap,
     ID_CATEGORY_STORAGE,
     RSS_NAMES,
-    HISTORY_STORAGE
+    HISTORY_STORAGE,
+    FUNCTION_NAMES
 } from "../constants";
 import {fetchSearchNews} from "../services/fetchSearchNews";
 import {fetchCategoryNews} from "../services/fetchCategoryNews.jsx";
@@ -19,7 +19,7 @@ import axios from "axios";
 import {useFunctionContext} from "../context/FunctionContext";
 
 export default function useVoiceControl(currentIndex, setCurrentIndex, articles, setArticles, idStorage) {
-    const {setCurrentFunc} = useFunctionContext(); // Dùng context
+    const {currentFunc ,setCurrentFunc} = useFunctionContext(); // Dùng context
     const [summary, setSummary] = useState("");
     const [isListening, setIsListening] = useState(false); // Trạng thái mic
     const [currentSuggestionIndex, setCurrentSuggestionIndex] = useState(0);
@@ -83,17 +83,21 @@ export default function useVoiceControl(currentIndex, setCurrentIndex, articles,
         console.log("Lệnh nhận được:", command);
 
         let preText = "chuyển sang";
+        let getFastFunction = currentFunc;
         for (const key in functionMap) {
             if (command.includes(key)) {
                 stopReading();
                 setCurrentFunc(functionMap[key]);
+                getFastFunction = functionMap[key];
                 readText(preText + functionMap[key]);
-                if (command.includes("chủ đề")) {
-                    suggestTopics()
+
+                if (key === FUNCTION_NAMES.CATEGORY) {
+                    suggestTopics();
                 }
-                break;
             }
         }
+
+        
 
         if (command.includes("tin tiếp theo")) {
             stopReading();
@@ -151,10 +155,10 @@ export default function useVoiceControl(currentIndex, setCurrentIndex, articles,
             stopReading();
             readText("Đang cập nhật tin tức mới nhất...");
             await fetchNews(setArticles, setCurrentIndex);
-        } else if (idStorage === ID_SEARCH_STORAGE) {
+        } else if (getFastFunction === FUNCTION_NAMES.SEARCH && currentFunc === FUNCTION_NAMES.SEARCH) {
             console.log("Đang tải tin tức tìm kiếm...");
             await fetchSearchNews(command, setArticles, setCurrentIndex);
-        } else if (idStorage === ID_CATEGORY_STORAGE) {
+        } else if (getFastFunction === FUNCTION_NAMES.CATEGORY) {            
             if (command.includes("tiếp theo")) {
                 skipSuggestion();
             } else {
@@ -169,8 +173,9 @@ export default function useVoiceControl(currentIndex, setCurrentIndex, articles,
                     await fetchCategoryNews(query, setArticles, setCurrentIndex);
                 }
             }
-        } else if (idStorage === HISTORY_STORAGE) {
-            await fetchHistoryNews(setArticles, setCurrentIndex);
+        } else if (getFastFunction === FUNCTION_NAMES.HISTORY) {
+            console.log("History");
+            
         }
     };
 
