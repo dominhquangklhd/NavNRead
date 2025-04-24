@@ -19,7 +19,7 @@ export default function SearchNews() {
             {articles.length > 0 ? (
                 <ContainContents title={articles[currentIndex].title} content={summary || "Đang tải nội dung..."} />
             ) : (
-                <ContainContents title="Đang tải tiêu đề..." content="..." />
+                <ContainContents title="Bạn muốn tìm kiếm gì?" content="..." />
             )}
             <MicButton buttonRef={buttonRef} isListening={isListening} startListening={startListening} />
         </div>
